@@ -7,9 +7,18 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
   const textareaRef = useRef(null);
   const [noteHeight, setNoteHeight] = useState("auto");
 
-  // Update parent when content changes
+  // Retrieve content from localStorage if available
+  useEffect(() => {
+    const storedContent = localStorage.getItem(note.id);
+    if (storedContent) {
+      setContent(storedContent);
+    }
+  }, [note.id]);
+
+  // Update parent and store content in localStorage when content changes
   useEffect(() => {
     onContentChange(note.id, content);
+    localStorage.setItem(note.id, content); // Store content in localStorage
   }, [content, note.id, onContentChange]);
 
   // Auto resize textarea height based on content
@@ -28,6 +37,7 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
   const handleReset = () => {
     setContent(""); // Reset content
     setNoteHeight("150px"); // Reset to initial height
+    localStorage.removeItem(note.id); // Remove content from localStorage
   };
 
   const stickyNoteStyle = {

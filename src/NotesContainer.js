@@ -58,7 +58,7 @@ const NotesContainer = () => {
         (sum, note) => sum + note.content.split(/\s+/).length,
         0
       );
-      if (!isPremium && newTotalWords > 30) {
+      if (!isPremium && newTotalWords > 100) {
         setPopupType("wordLimit");
         setShowPopup(true);
         return;
@@ -70,11 +70,11 @@ const NotesContainer = () => {
   }, [noteToUpdate, notes, isPremium]);
 
   const addNote = () => {
-    if (!isPremium && notes.length >= 2) {
-      setPopupType("default");
-      setShowPopup(true);
-      return;
-    }
+    // if (!isPremium && notes.length >= 2) {
+    //   setPopupType("default");
+    //   setShowPopup(true);
+    //   return;
+    // }
     const newNote = {
       id: uuidv4(),
       content: "",
@@ -91,18 +91,19 @@ const NotesContainer = () => {
         0
       )
     );
+    localStorage.removeItem(id); // Remove note content from localStorage when deleted
   };
 
   const triggerUpdateNoteContent = (id, content) => {
-    const wordCount = content.split(/\s+/).length;
-    if (!isPremium && wordCount > 30) {
-      setPopupType("wordLimit");
-      setShowPopup(true);
-      return;
-    }
-    if (noteToUpdate?.id !== id || noteToUpdate?.content !== content) {
-      setNoteToUpdate({ id, content });
-    }
+    // const wordCount = content.split(/\s+/).length;
+    // if (!isPremium && wordCount > 100) {
+    //   setPopupType("wordLimit");
+    //   setShowPopup(true);
+    //   return;
+    // }
+    // if (noteToUpdate?.id !== id || noteToUpdate?.content !== content) {
+    //   setNoteToUpdate({ id, content });
+    // }
   };
 
   const handlePurchase = () => {
@@ -115,16 +116,16 @@ const NotesContainer = () => {
   };
 
   const handleApplyCoupon = (code) => {
-    const coupon = dummyCoupons.find((c) => c.code === code && !c.used);
-    if (coupon) {
-      coupon.used = true;
-      setIsPremium(true);
-      localStorage.setItem("isPremium", JSON.stringify(true));
-      alert("Coupon applied successfully! You are now a premium user.");
-      setShowPopup(false);
-    } else {
-      alert("Invalid or already used coupon code.");
-    }
+    // const coupon = dummyCoupons.find((c) => c.code === code && !c.used);
+    // if (coupon) {
+    //   coupon.used = true;
+    //   setIsPremium(true);
+    //   localStorage.setItem("isPremium", JSON.stringify(true));
+    //   alert("Coupon applied successfully! You are now a premium user.");
+    //   setShowPopup(false);
+    // } else {
+    //   alert("Invalid or already used coupon code.");
+    // }
   };
 
   const handleBuy = () => {
@@ -177,7 +178,7 @@ const NotesContainer = () => {
         <button style={buttonStyle} onClick={addNote}>
           Add Note
         </button>
-        {!isPremium && (
+        {/* {!isPremium && (
           <button style={premiumButtonStyle} onClick={handlePurchase}>
             Premium <MdOutlineWorkspacePremium />
           </button>
@@ -188,7 +189,7 @@ const NotesContainer = () => {
             onApplyCoupon={handleApplyCoupon}
             onBuy={handleBuy}
           />
-        )}
+        )} */}
       </div>
     </div>
   );

@@ -43,13 +43,13 @@ function App() {
           Sticky Notes{" "}
           <sup style={{ fontSize: 11, color: "#525252" }}>Beta</sup>
         </h1>
-        <button style={buttonStyle} onClick={toggleTheme}>
+        {/* <button style={buttonStyle} onClick={toggleTheme}>
           {isDarkMode ? (
             <MdOutlineDarkMode size={20} />
           ) : (
             <MdDarkMode size={20} />
           )}
-        </button>
+        </button> */}
       </div>
       <NotesContainer />
     </div>
