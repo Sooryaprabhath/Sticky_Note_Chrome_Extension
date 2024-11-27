@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GrPowerReset } from "react-icons/gr";
 import { MdDelete } from "react-icons/md";
+import { FaCopy } from "react-icons/fa"; // Icon for the Copy button
 
 const StickyNote = ({ note, onDelete, onContentChange }) => {
   const [content, setContent] = useState(note.content);
@@ -38,6 +39,11 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
     setContent(""); // Reset content
     setNoteHeight("150px"); // Reset to initial height
     localStorage.removeItem(note.id); // Remove content from localStorage
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(content).then(() => {
+    });
   };
 
   const stickyNoteStyle = {
@@ -91,6 +97,16 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
     backgroundColor: "#2980B9",
   };
 
+  const copyButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: "#4CAF50",
+    marginRight: "10px",
+  };
+
+  const copyButtonHoverStyle = {
+    backgroundColor: "#388E3C",
+  };
+
   return (
     <div style={stickyNoteStyle}>
       <textarea
@@ -113,6 +129,20 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
           onClick={handleReset}
         >
           <GrPowerReset size={20} />
+        </button>
+        <button
+          style={copyButtonStyle}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              copyButtonHoverStyle.backgroundColor)
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              copyButtonStyle.backgroundColor)
+          }
+          onClick={handleCopy}
+        >
+          <FaCopy size={20} />
         </button>
         <button
           style={buttonStyle}
