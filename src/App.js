@@ -1,13 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import NotesContainer from "./NotesContainer";
 import { MdDarkMode, MdOutlineDarkMode } from "react-icons/md";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "./firebase";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [notes, setNotes] = useState([]); // Define the state for notes
 
   const toggleTheme = () => {
     setIsDarkMode((prevMode) => !prevMode);
   };
+
+  // Fetch notes from Firestore inside the functional component
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "notes"), (snapshot) => {
+      const fetchedNotes = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setNotes(fetchedNotes); // Update the notes state
+    });
+
+    return () => unsubscribe(); // Cleanup the listener on unmount
+  }, []);
 
   const appStyle = {
     fontFamily: "Arial, sans-serif",
@@ -43,15 +59,15 @@ function App() {
           Sticky Notes{" "}
           <sup style={{ fontSize: 11, color: "#525252" }}>Beta</sup>
         </h1>
-        {/* <button style={buttonStyle} onClick={toggleTheme}>
+        <button style={buttonStyle} onClick={toggleTheme}>
           {isDarkMode ? (
             <MdOutlineDarkMode size={20} />
           ) : (
             <MdDarkMode size={20} />
           )}
-        </button> */}
+        </button>
       </div>
-      <NotesContainer />
+      <NotesContainer notes={notes} /> {/* Pass notes to NotesContainer */}
     </div>
   );
 }

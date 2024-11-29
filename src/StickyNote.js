@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { GrPowerReset } from "react-icons/gr";
 import { MdDelete } from "react-icons/md";
 import { FaCopy } from "react-icons/fa"; // Icon for the Copy button
+import { AiOutlineSave } from "react-icons/ai"; // Icon for the Save button
+import { doc, setDoc, deleteDoc } from "firebase/firestore";
+import { db } from "./firebase";
 
 const StickyNote = ({ note, onDelete, onContentChange }) => {
   const [content, setContent] = useState(note.content);
@@ -19,7 +22,6 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
   // Update parent and store content in localStorage when content changes
   useEffect(() => {
     onContentChange(note.id, content);
-    localStorage.setItem(note.id, content); // Store content in localStorage
   }, [content, note.id, onContentChange]);
 
   // Auto resize textarea height based on content
@@ -43,7 +45,32 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content).then(() => {
+      alert("Content copied to clipboard!");
     });
+  };
+
+  const handleSave = async () => {
+    try {
+      await setDoc(doc(db, "notes", note.id), {
+        content,
+        timestamp: new Date(),
+      });
+      alert("Note saved to Firestore!");
+    } catch (error) {
+      console.error("Error saving note to Firestore:", error);
+      alert("Failed to save note.");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteDoc(doc(db, "notes", note.id));
+      onDelete(note.id);
+      alert("Note deleted from Firestore!");
+    } catch (error) {
+      console.error("Error deleting note from Firestore:", error);
+      alert("Failed to delete note.");
+    }
   };
 
   const stickyNoteStyle = {
@@ -81,30 +108,16 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
     cursor: "pointer",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
     transition: "background-color 0.3s",
-  };
-
-  const buttonHoverStyle = {
-    backgroundColor: "#FF3D00",
-  };
-
-  const resetButtonStyle = {
-    ...buttonStyle,
-    backgroundColor: "#3498DB",
     marginRight: "10px",
   };
 
-  const resetButtonHoverStyle = {
-    backgroundColor: "#2980B9",
-  };
-
-  const copyButtonStyle = {
+  const saveButtonStyle = {
     ...buttonStyle,
-    backgroundColor: "#4CAF50",
-    marginRight: "10px",
+    backgroundColor: "#F4A261",
   };
 
-  const copyButtonHoverStyle = {
-    backgroundColor: "#388E3C",
+  const saveButtonHoverStyle = {
+    backgroundColor: "#E76F51",
   };
 
   return (
@@ -117,47 +130,35 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
       />
       <div style={{ position: "absolute", bottom: "10px", right: "10px" }}>
         <button
-          style={resetButtonStyle}
+          style={saveButtonStyle}
           onMouseOver={(e) =>
             (e.currentTarget.style.backgroundColor =
-              resetButtonHoverStyle.backgroundColor)
+              saveButtonHoverStyle.backgroundColor)
           }
           onMouseOut={(e) =>
             (e.currentTarget.style.backgroundColor =
-              resetButtonStyle.backgroundColor)
+              saveButtonStyle.backgroundColor)
           }
-          onClick={handleReset}
+          onClick={handleSave}
         >
+          <AiOutlineSave size={20} />
+        </button>
+        <button style={buttonStyle} onClick={handleReset}>
           <GrPowerReset size={20} />
         </button>
-        <button
-          style={copyButtonStyle}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              copyButtonHoverStyle.backgroundColor)
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              copyButtonStyle.backgroundColor)
-          }
-          onClick={handleCopy}
-        >
+        <button style={buttonStyle} onClick={handleCopy}>
           <FaCopy size={20} />
         </button>
-        <button
+        <button style={buttonStyle} onClick={handleDelete}>
+          <MdDelete size={20} />
+        </button>
+
+        {/* <button
           style={buttonStyle}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              buttonHoverStyle.backgroundColor)
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              buttonStyle.backgroundColor)
-          }
           onClick={() => onDelete(note.id)}
         >
           <MdDelete size={20} />
-        </button>
+        </button> */}
       </div>
     </div>
   );
