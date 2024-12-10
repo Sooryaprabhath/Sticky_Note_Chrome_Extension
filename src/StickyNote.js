@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GrPowerReset } from "react-icons/gr";
 import { MdDelete } from "react-icons/md";
-import { FaCopy } from "react-icons/fa"; // Icon for the Copy button
-import { AiOutlineSave } from "react-icons/ai"; // Icon for the Save button
-import { doc, setDoc, deleteDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { BsDatabaseFillDown } from "react-icons/bs";
+import { FaCopy } from "react-icons/fa";
+import { AiOutlineSave } from "react-icons/ai";
+import { getAuth } from 'firebase/auth';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const StickyNote = ({ note, onDelete, onContentChange }) => {
   const [content, setContent] = useState(note.content);
   const textareaRef = useRef(null);
   const [noteHeight, setNoteHeight] = useState("auto");
 
-  // Retrieve content from localStorage if available
   useEffect(() => {
     const storedContent = localStorage.getItem(note.id);
     if (storedContent) {
@@ -19,12 +20,12 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
     }
   }, [note.id]);
 
-  // Update parent and store content in localStorage when content changes
   useEffect(() => {
+    // Update content in localStorage whenever it changes
+    localStorage.setItem(note.id, content);
     onContentChange(note.id, content);
   }, [content, note.id, onContentChange]);
 
-  // Auto resize textarea height based on content
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -38,38 +39,48 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
   };
 
   const handleReset = () => {
-    setContent(""); // Reset content
-    setNoteHeight("150px"); // Reset to initial height
-    localStorage.removeItem(note.id); // Remove content from localStorage
+    setContent("");
+    setNoteHeight("150px");
+    localStorage.removeItem(note.id);
+    toast.success("Note reset successfully!");
   };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content).then(() => {
-      alert("Content copied to clipboard!");
+      toast.success("Content copied to clipboard!");
     });
   };
 
-  const handleSave = async () => {
-    try {
-      await setDoc(doc(db, "notes", note.id), {
-        content,
-        timestamp: new Date(),
-      });
-      alert("Note saved to Firestore!");
-    } catch (error) {
-      console.error("Error saving note to Firestore:", error);
-      alert("Failed to save note.");
+  const handleSave = () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      localStorage.setItem(`${user.uid}_note_${note.id}`, content);  // Store in localStorage under the user's UID
+      toast.success("Note saved locally!");
+    } else {
+      toast.error("User not logged in.");
     }
   };
 
-  const handleDelete = async () => {
-    try {
-      await deleteDoc(doc(db, "notes", note.id));
-      onDelete(note.id);
-      alert("Note deleted from Firestore!");
-    } catch (error) {
-      console.error("Error deleting note from Firestore:", error);
-      alert("Failed to delete note.");
+  const handleDelete = () => {
+    localStorage.removeItem(note.id);
+    onDelete(note.id); // Call parent onDelete function to remove note
+    toast.success("Note deleted locally!");
+  };
+
+  const handleRetrieve = () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      const savedContent = localStorage.getItem(`${user.uid}_note_${note.id}`);
+      if (savedContent) {
+        setContent(savedContent);
+        toast.success("Note retrieved from local storage!");
+      } else {
+        toast.error("No saved note found.");
+      }
+    } else {
+      toast.error("User not logged in.");
     }
   };
 
@@ -79,7 +90,7 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
     borderRadius: "12px",
     boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
     width: "300px",
-    minHeight: "150px", // Initial height
+    minHeight: "150px",
     marginBottom: "20px",
     position: "relative",
     fontFamily: `'Roboto', sans-serif`,
@@ -98,10 +109,9 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
     color: "#333",
   };
 
-  const buttonStyle = {
-    padding: "8px",
-    paddingTop: "10px",
-    backgroundColor: "#FF6F61",
+  const buttonBaseStyle = {
+    padding: 6,
+    paddingTop: 8,
     color: "white",
     border: "none",
     borderRadius: "10px",
@@ -112,12 +122,28 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
   };
 
   const saveButtonStyle = {
-    ...buttonStyle,
-    backgroundColor: "#F4A261",
+    ...buttonBaseStyle,
+    backgroundColor: "#4cc777",
   };
 
-  const saveButtonHoverStyle = {
-    backgroundColor: "#E76F51",
+  const resetButtonStyle = {
+    ...buttonBaseStyle,
+    backgroundColor: "#f5cd2a",
+  };
+
+  const copyButtonStyle = {
+    ...buttonBaseStyle,
+    backgroundColor: "#2192de",
+  };
+
+  const deleteButtonStyle = {
+    ...buttonBaseStyle,
+    backgroundColor: "#e35959",
+  };
+
+  const retrieveButtonStyle = {
+    ...buttonBaseStyle,
+    backgroundColor: "#9c27b0", // Purple for retrieve
   };
 
   return (
@@ -128,38 +154,55 @@ const StickyNote = ({ note, onDelete, onContentChange }) => {
         value={content}
         onChange={handleChange}
       />
-      <div style={{ position: "absolute", bottom: "10px", right: "10px" }}>
-        <button
-          style={saveButtonStyle}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              saveButtonHoverStyle.backgroundColor)
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              saveButtonStyle.backgroundColor)
-          }
-          onClick={handleSave}
-        >
-          <AiOutlineSave size={20} />
-        </button>
-        <button style={buttonStyle} onClick={handleReset}>
-          <GrPowerReset size={20} />
-        </button>
-        <button style={buttonStyle} onClick={handleCopy}>
-          <FaCopy size={20} />
-        </button>
-        <button style={buttonStyle} onClick={handleDelete}>
-          <MdDelete size={20} />
-        </button>
-
-        {/* <button
-          style={buttonStyle}
-          onClick={() => onDelete(note.id)}
-        >
-          <MdDelete size={20} />
-        </button> */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "10px",
+          right: "10px",
+          display: "flex",
+        }}
+      >
+        <div>
+          <button
+            style={copyButtonStyle}
+            onClick={handleCopy}
+            title="Copy Content"
+          >
+            <FaCopy size={18} />
+          </button>
+          <button
+            style={resetButtonStyle}
+            onClick={handleReset}
+            title="Reset Note"
+          >
+            <GrPowerReset size={18} />
+          </button>
+          <button
+            style={deleteButtonStyle}
+            onClick={handleDelete}
+            title="Delete Note"
+          >
+            <MdDelete size={18} />
+          </button>
+        </div>
+        <div>
+          <button
+            style={saveButtonStyle}
+            onClick={handleSave}
+            title="Save Note"
+          >
+            <AiOutlineSave size={18} />
+          </button>
+          <button
+            style={retrieveButtonStyle}
+            onClick={handleRetrieve}
+            title="Retrieve Note"
+          >
+            <BsDatabaseFillDown size={18} />
+          </button>
+        </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

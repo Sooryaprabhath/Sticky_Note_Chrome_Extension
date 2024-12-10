@@ -142,7 +142,7 @@ const NotesContainer = () => {
 
   const buttonStyle = {
     padding: "8px",
-    backgroundColor: "#02ba61",
+    backgroundColor: "#27498c",
     color: "white",
     borderRadius: "4px",
     border: "none",
@@ -162,8 +162,31 @@ const NotesContainer = () => {
     marginLeft: 10,
   };
 
+  const headingStyle = {
+    fontSize: "22px",
+    marginRight: "auto",
+    marginBottom: 10,
+  };
+
+  // const buttonStyle = {
+  //   backgroundColor: isDarkMode ? "#555" : "#ddd",
+  //   color: isDarkMode ? "#fff" : "#000",
+  //   border: "none",
+  //   cursor: "pointer",
+  //   borderRadius: "50%",
+  //   width: "40px",
+  //   height: "40px",
+  //   display: "flex",
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // };
+
   return (
     <div style={containerStyle}>
+       <h1 style={headingStyle}>
+          Sticky Notes{" "}
+          <sup style={{ fontSize: 11, color: "#525252" }}>Beta</sup>
+        </h1>
       <div style={notesContainerStyle}>
         {notes.map((note) => (
           <StickyNote

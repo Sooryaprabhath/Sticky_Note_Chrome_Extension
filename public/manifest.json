@@ -3,7 +3,10 @@
   "name": "Easy Paste",
   "version": "1.0.2",
   "description": "Sticky note extension to make developer, tester and normal users life easy.",
-  "permissions": [],
+  "permissions": [
+    "identity", 
+    "storage"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -17,5 +20,12 @@
     "16": "icon18.png",
     "48": "icon18.png",
     "128": "icon18.png"
+  },
+  "oauth2": {
+    "client_id": "1084263657353-vpr12r37id77a8k5v49ef0j2kjkvisge.apps.googleusercontent.com",
+    "scopes": [
+      "email",
+      "profile"
+    ]
   }
 }
